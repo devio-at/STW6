@@ -7,7 +7,7 @@ var ScrewTurn;
         (function (Web) {
             var Common;
             (function (Common) {
-                var HistoryPage = (function () {
+                var HistoryPage = /** @class */ (function () {
                     function HistoryPage(wizard, page) {
                         this.wizard = wizard;
                         this.page = page;

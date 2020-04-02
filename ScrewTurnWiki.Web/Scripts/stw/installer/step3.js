@@ -7,13 +7,13 @@ var ScrewTurn;
         (function (Web) {
             var Installer;
             (function (Installer) {
-                var Step3Messages = (function () {
+                var Step3Messages = /** @class */ (function () {
                     function Step3Messages() {
                     }
                     return Step3Messages;
                 }());
                 Installer.Step3Messages = Step3Messages;
-                var Step3 = (function () {
+                var Step3 = /** @class */ (function () {
                     function Step3(wizard, messages) {
                         this._tips = $(".validateTips");
                         this._wizard = wizard;

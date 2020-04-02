@@ -7,13 +7,13 @@ var ScrewTurn;
         (function (Web) {
             var Installer;
             (function (Installer) {
-                var Step4Messages = (function () {
+                var Step4Messages = /** @class */ (function () {
                     function Step4Messages() {
                     }
                     return Step4Messages;
                 }());
                 Installer.Step4Messages = Step4Messages;
-                var Step4 = (function () {
+                var Step4 = /** @class */ (function () {
                     function Step4(wizard, messages, needMasterPassword) {
                         this.passForm = $("#setPassword");
                         this.ok = $("#completed");
@@ -26,10 +26,12 @@ var ScrewTurn;
                         if (this.needMasterPassword) {
                             $(this.passForm).show();
                             $(this.ok).hide();
+                            //this._result.hide();
                         }
                         else {
                             $(this.passForm).hide();
                             $(this.ok).show();
+                            //this._result.hide(); 
                         }
                     }
                     Step4.prototype.checkPassword = function () {
@@ -78,6 +80,7 @@ var ScrewTurn;
                             this.updateTips(this.messages.passwordSaveSuccess, true);
                             $(this.passForm).hide();
                             $(this.ok).show();
+                            //this._result.show();
                         }
                         else {
                             bootbox.alert("<h2>" + this.messages.titleError + "<h2><pre style='max-height:500px;overflow-y:scroll;'>" + data.ErrorMessage + "</pre>");

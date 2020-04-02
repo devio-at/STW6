@@ -7,7 +7,7 @@ var ScrewTurn;
         (function (Web) {
             var Common;
             (function (Common) {
-                var CommonWizard = (function () {
+                var CommonWizard = /** @class */ (function () {
                     function CommonWizard() {
                     }
                     CommonWizard.prototype.makeAjaxRequest = function (url, data, successFunction) {

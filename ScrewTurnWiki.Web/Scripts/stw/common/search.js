@@ -7,7 +7,7 @@ var ScrewTurn;
         (function (Web) {
             var Common;
             (function (Common) {
-                var Search = (function () {
+                var Search = /** @class */ (function () {
                     function Search(wizard) {
                         this.wizard = wizard;
                         this.toggleCategoriesList();

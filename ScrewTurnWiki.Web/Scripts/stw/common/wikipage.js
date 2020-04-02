@@ -7,7 +7,7 @@ var ScrewTurn;
         (function (Web) {
             var Common;
             (function (Common) {
-                var WikiPage = (function () {
+                var WikiPage = /** @class */ (function () {
                     function WikiPage(wizard) {
                         this.wizard = wizard;
                         this.showTimer = null;
@@ -131,6 +131,7 @@ var ScrewTurn;
                         var element = document.getElementById("PageAttachmentsDiv");
                         if (element && !this.attachmentsMenuJustShown) {
                             element.style["display"] = "none";
+                            //if (ie7Mode) element.style["left"] = "10000px";
                         }
                         this.attachmentsMenuJustShown = false;
                         return true; // Needed to enabled next clicks' action (file download)
@@ -158,6 +159,7 @@ var ScrewTurn;
                         var element = document.getElementById("AdminToolsDiv");
                         if (element && !this.adminToolsMenuJustShown) {
                             element.style["display"] = "none";
+                            //if (ie7Mode) element.style["left"] = "10000px";
                         }
                         this.adminToolsMenuJustShown = false;
                         return true; // Needed to enable next clicks' action (admin tools)
