@@ -100,10 +100,56 @@ namespace ScrewTurn.Wiki.Web.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        public ActionResult Step4()
+        {
+            if (Settings.Installed && !Settings.NeedMasterPassword)
+                return RedirectToAction("Index", "Wiki");
+
+            var model = new InstallViewModel();
+
+            SetLanguage("en");
+            model.Installed = Settings.Installed;
+
+            /*if (!Settings.Installed)
+            {
+                try
+                {
+                    if (ModelState.IsValid)
+                    {
+                        var settings = MappingToApplicationSettings(model);
+                        _configReaderWriter.Save(settings);
+                        model.NeedMasterPassword = _configReaderWriter.NeedMasterPassword(settings); // Global settings provider is actual - refresh field NeedMasterPassword
+                        model.Installed = true;
+                    }
+                }
+                catch (Exception e)
+                {
+                    try
+                    {
+                        _configReaderWriter.ResetInstalledState();
+                    }
+                    catch (Exception ex)
+                    {
+                        ModelState.AddModelError(InstallStrings.FailureInstall, ex.Message + e);
+                    }
+                    ModelState.AddModelError(InstallStrings.FailureInstall, e.Message + e);
+                }
+            }
+            else
+            {
+            }*/
+
+            model.NeedMasterPassword = Settings.NeedMasterPassword;
+
+            return View(model);
+        }
+
         /// <summary>
 		/// Validates the POST'd <see cref="InstallViewModel"/> object. If the settings are valid,
 		/// an attempt is made to install using this.
         /// </summary>
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Step4(InstallViewModel model)
         {
