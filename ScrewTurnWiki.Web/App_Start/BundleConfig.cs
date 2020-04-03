@@ -51,9 +51,9 @@ namespace ScrewTurnWiki.Web
 
             bundles.Add(new ScriptBundle(RespondJS).Include("~/Scripts/respond.js"));
 
-            bundles.Add(new ScriptBundle(BootstrapJS).Include("~/Content/bootstrap/js/bootstrap.js"));
+            bundles.Add(new ScriptBundle(BootstrapJS).Include("~/Scripts/bootstrap.js"));
 
-            bundles.Add(new StyleBundle(BootstrapCss).Include("~/Content/bootstrap/css/bootstrap.css"));
+            bundles.Add(new StyleBundle(BootstrapCss).Include("~/Content/bootstrap.css"));
 
             bundles.Add(new ScriptBundle(BootboxJS).Include("~/Scripts/bootbox.js"));
 
