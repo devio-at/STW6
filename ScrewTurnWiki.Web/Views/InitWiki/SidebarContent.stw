@@ -1,0 +1,21 @@
+﻿<div style="float: right;">
+<a href="RSS" title="Update notifications for {WIKITITLE} (RSS 2.0)"><img src="{THEMEPATH}Images/RSS.png" alt="RSS" /></a>
+<a href="RSS?Discuss=1" title="Update notifications for {WIKITITLE} Discussions (RSS 2.0)"><img src="{THEMEPATH}Images/RSS-Discussion.png" alt="RSS" /></a></div>
+
+* '''[MainPage|Main Page]'''
+
+* [RandPage|Random Page]
+* [Edit|Create a new Page]
+* [AllPages|All Pages]
+* [Category|Categories]
+* [NavPath|Navigation Paths]
+
+* [AdminHome|Administration]
+* [Upload|File Management]
+
+* [Register|Create Account]
+
+<small>'''Search the wiki'''</small>{BR}
+{SEARCHBOX}
+
+[image|PoweredBy|Images/PoweredBy.png|https://github.com/devio-at/STW6]

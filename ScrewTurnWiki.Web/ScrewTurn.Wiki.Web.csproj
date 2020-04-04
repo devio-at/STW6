@@ -554,6 +554,18 @@
     <Content Include="Views\User\ProfileEmail.cshtml" />
     <Content Include="Views\User\ProfilePassword.cshtml" />
     <Content Include="Views\User\Register.cshtml" />
+    <Content Include="Views\InitWiki\MainPageContent.stw" />
+    <Content Include="Views\InitWiki\HeaderContent.stw" />
+    <Content Include="Views\InitWiki\FooterContent.stw" />
+    <Content Include="Views\InitWiki\SidebarContent.stw" />
+    <Content Include="Views\InitWiki\MainPageContentForSubNamespace.stw" />
+    <Content Include="Views\InitWiki\AccountActivationMessageContent.stw" />
+    <Content Include="Views\InitWiki\EditNoticeContent.stw" />
+    <Content Include="Views\InitWiki\PasswordResetProcedureMessageContent.stw" />
+    <Content Include="Views\InitWiki\SidebarContentForSubNamespace.stw" />
+    <Content Include="Views\InitWiki\PageChangeMessage.stw" />
+    <Content Include="Views\InitWiki\DiscussionChangeMessage.stw" />
+    <Content Include="Views\InitWiki\ApproveDraftMessage.stw" />
     <None Include="Views\Wiki\Discussion.cshtml" />
   </ItemGroup>
   <ItemGroup>

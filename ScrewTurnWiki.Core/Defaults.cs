@@ -1,15 +1,53 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.IO;
+using System.Web;
 
-namespace ScrewTurn.Wiki {
+namespace ScrewTurn.Wiki
+{
 
-	/// <summary>
-	/// Contains default values.
-	/// </summary>
-	public static class Defaults {
+    /// <summary>
+    /// Contains default values.
+    /// </summary>
+    public static class Defaults {
 
+        //static ObjectCache fileCache = MemoryCache.Default;
+        static string fileDir = HttpContext.Current.Server.MapPath("~/Views/InitWiki/");
+
+        static string PageContent(string page)
+        {
+            /* used for wiki initialization only, no cache required
+             
+            // https://docs.microsoft.com/en-us/dotnet/api/system.runtime.caching.memorycache?view=netframework-4.8
+
+            var result = fileCache[page] as string;
+            if (result == null)
+            {
+                CacheItemPolicy policy = new CacheItemPolicy();
+
+                var filename = Path.Combine(fileDir, page + ".stw");
+
+                List<string> filePaths = new List<string>();
+                filePaths.Add(filename);
+
+                policy.ChangeMonitors.Add(new HostFileChangeMonitor(filePaths));
+
+                // Fetch the file contents.  
+                result = File.ReadAllText(filename);
+
+                fileCache.Set(page, result, policy);
+            }
+            */
+
+            var filename = Path.Combine(fileDir, page + ".stw");
+            var result = File.ReadAllText(filename);
+            return result;
+        }
+
+        /// <summary>
+        /// The default content of the main page from /Views/ScrewTurnCore/MainPageContent.stw
+        /// </summary>
+        public static string MainPageContent => PageContent("MainPageContent");
+
+        /*
 		/// <summary>
 		/// The default content of the main page.
 		/// </summary>
@@ -21,21 +59,29 @@ You should edit this page, using the ''Edit'' button in the top-right corner of 
 If you need help, try to visit [http://www.sunhorizon.info|our website] or [http://www.sunhorizon.info/forum|our forum].
 
 '''Warning''': remember to setup the ''admin'' account by editing the {{Web.config}} file placed in the root directory of the Wiki. It is ''extremely dangerous'' to keep the default password.";
+        */
 
-		/// <summary>
-		/// The default content of the main page of a sub-namespace.
-		/// </summary>
-		public const string MainPageContentForSubNamespace = @"Welcome to the '''{NAMESPACE}''' namespace of '''{WIKITITLE}'''!{BR}
+        /// <summary>
+        /// The default content of the main page of a sub-namespace.
+        /// </summary>
+        public static string MainPageContentForSubNamespace => PageContent("MainPageContentForSubNamespace");
+
+        /*
+        public const string MainPageContentForSubNamespace = @"Welcome to the '''{NAMESPACE}''' namespace of '''{WIKITITLE}'''!{BR}
 This is the main page of the namespace, created for you by the system.
 
 You should edit this page, using the ''Edit'' button in the top-right corner of the screen. You can also create a new page, using the ''Create a new Page'' link in the sidebar on the left.
 
 If you need help, try to visit [http://www.sunhorizon.info|our website] or [http://www.sunhorizon.info/forum|our forum].";
+        */
 
-		/// <summary>
-		/// The default content of the account activation message.
-		/// </summary>
-		public const string AccountActivationMessageContent = @"Hi ##USERNAME## and welcome to ##WIKITITLE##!
+        /// <summary>
+        /// The default content of the account activation message.
+        /// </summary>
+        public static string AccountActivationMessageContent => PageContent("AccountActivationMessageContent");
+
+        /*
+        public const string AccountActivationMessageContent = @"Hi ##USERNAME## and welcome to ##WIKITITLE##!
 You must activate your new ##WIKITITLE## Account within 24 hours, following the link below.
 
 ##ACTIVATIONLINK##
@@ -46,27 +92,46 @@ Thank you.
 
 Best regards,
 The ##WIKITITLE## Team.";
+        */
 
-		/// <summary>
-		/// The default content of the edit notice.
-		/// </summary>
-		public const string EditNoticeContent = @"Please '''do not''' include contents covered by copyright without the explicit permission of the Author. Always preview the result before saving.{BR}
+        /// <summary>
+        /// The default content of the edit notice.
+        /// </summary>
+        public static string EditNoticeContent => PageContent("EditNoticeContent");
+
+        /*
+        public const string EditNoticeContent = @"Please '''do not''' include contents covered by copyright without the explicit permission of the Author. Always preview the result before saving.{BR}
 If you are having trouble, please visit the [http://www.sunhorizon.info/Help.ashx|Help section] at the [http://www.sunhorizon.info|ScrewTurn Wiki Website].";
+        */
 
-		/// <summary>
-		/// The default content of the footer.
-		/// </summary>
+        /// <summary>
+        /// The default content of the footer.
+        /// </summary>
+        public static string FooterContent => PageContent("FooterContent");
+
+        /*
         public const string FooterContent = @"<p class=""small"">[http://www.sunhorizon.info|ScrewTurn Wiki] version {WIKIVERSION}. Some of the icons created by [http://www.famfamfam.com|FamFamFam].</p>";
+        */
 
-		/// <summary>
-		/// The default content of the header.
-		/// </summary>
-		public const string HeaderContent = @"<div style=""float: right;"">Welcome {USERNAME}, you are in: {NAMESPACEDROPDOWN} &bull; {LOGINLOGOUT}</div><h1>{WIKITITLE}</h1>";
+        /// <summary>
+        /// The default content of the header.
+        /// </summary>
+        public static string HeaderContent => PageContent("HeaderContent");
 
-		/// <summary>
-		/// The default content of the password reset message.
-		/// </summary>
-		public const string PasswordResetProcedureMessageContent = @"Hi ##USERNAME##!
+        /*
+        /// <summary>
+        /// The default content of the header.
+        /// </summary>
+        public const string HeaderContent = @"<div style=""float: right;"">Welcome {USERNAME}, you are in: {NAMESPACEDROPDOWN} &bull; {LOGINLOGOUT}</div><h1>{WIKITITLE}</h1>";
+        */
+
+        /// <summary>
+        /// The default content of the password reset message.
+        /// </summary>
+        public static string PasswordResetProcedureMessageContent => PageContent("PasswordResetProcedureMessageContent");
+
+        /*
+        public const string PasswordResetProcedureMessageContent = @"Hi ##USERNAME##!
 Your can change your password following the instructions you will see at this link:
 	##LINK##
 
@@ -76,11 +141,15 @@ Thank you.
 
 Best regards,
 The ##WIKITITLE## Team.";
+        */
 
-		/// <summary>
-		/// The default content of the sidebar.
-		/// </summary>
-		public const string SidebarContent = @"<div style=""float: right;"">
+        /// <summary>
+        /// The default content of the sidebar.
+        /// </summary>
+        public static string SidebarContent => PageContent("SidebarContent");
+
+        /*
+        public const string SidebarContent = @"<div style=""float: right;"">
 <a href=""RSS"" title=""Update notifications for {WIKITITLE} (RSS 2.0)""><img src=""{THEMEPATH}Images/RSS.png"" alt=""RSS"" /></a>
 <a href=""RSS?Discuss=1"" title=""Update notifications for {WIKITITLE} Discussions (RSS 2.0)""><img src=""{THEMEPATH}Images/RSS-Discussion.png"" alt=""RSS"" /></a></div>
 
@@ -101,11 +170,15 @@ The ##WIKITITLE## Team.";
 {SEARCHBOX}
 
 [image|PoweredBy|Images/PoweredBy.png|http://www.sunhorizon.info]";
+        */
 
-		/// <summary>
-		/// The default content of the sidebar of a sub-namespace.
-		/// </summary>
-		public const string SidebarContentForSubNamespace = @"<div style=""float: right;"">
+        /// <summary>
+        /// The default content of the sidebar of a sub-namespace.
+        /// </summary>
+        public static string SidebarContentForSubNamespace => PageContent("SidebarContentForSubNamespace");
+
+        /*
+        public const string SidebarContentForSubNamespace = @"<div style=""float: right;"">
 <a href=""{NAMESPACE}.RSS"" title=""Update notifications for {WIKITITLE} ({NAMESPACE}) (RSS 2.0)""><img src=""{THEMEPATH}Images/RSS.png"" alt=""RSS"" /></a>
 <a href=""{NAMESPACE}.RSS?Discuss=1"" title=""Update notifications for {WIKITITLE} Discussions ({NAMESPACE}) (RSS 2.0)""><img src=""{THEMEPATH}Images/RSS-Discussion.png"" alt=""RSS"" /></a></div>
 
@@ -127,11 +200,15 @@ The ##WIKITITLE## Team.";
 {SEARCHBOX}
 
 [image|PoweredBy|Images/PoweredBy.png|http://www.sunhorizon.info]";
+        */
 
-		/// <summary>
-		/// The default content of the page change email message.
-		/// </summary>
-		public const string PageChangeMessage = @"The page ""##PAGE##"" was modified by ##USER## on ##DATETIME##.
+        /// <summary>
+        /// The default content of the page change email message.
+        /// </summary>
+        public static string PageChangeMessage => PageContent("PageChangeMessage");
+
+        /*
+        public const string PageChangeMessage = @"The page ""##PAGE##"" was modified by ##USER## on ##DATETIME##.
 Author's comment: ##COMMENT##.
 
 The page can be found at the following address:
@@ -141,11 +218,15 @@ Thank you.
 
 Best regards,
 The ##WIKITITLE## Team.";
+        */
 
-		/// <summary>
-		/// The default content of the discussion change email message.
-		/// </summary>
-		public const string DiscussionChangeMessage = @"A new message was posted on the page ""##PAGE##"" by ##USER## on ##DATETIME##.
+        /// <summary>
+        /// The default content of the discussion change email message.
+        /// </summary>
+        public static string DiscussionChangeMessage => PageContent("DiscussionChangeMessage");
+
+        /*
+        public const string DiscussionChangeMessage = @"A new message was posted on the page ""##PAGE##"" by ##USER## on ##DATETIME##.
 
 The subject of the message is ""##SUBJECT##"" and it can be found at the following address:
 ##LINK##
@@ -154,11 +235,15 @@ Thank you.
 
 Best regards,
 The ##WIKITITLE## Team.";
+        */
 
-		/// <summary>
-		/// The default content of the approve draft email message.
-		/// </summary>
-		public const string ApproveDraftMessage = @"A draft for the page ""##PAGE##"" was created or modified by ##USER## on ##DATETIME## and is currently held for **approval**.
+        /// <summary>
+        /// The default content of the approve draft email message.
+        /// </summary>
+        public static string ApproveDraftMessage => PageContent("ApproveDraftMessage");
+
+        /*
+        public const string ApproveDraftMessage = @"A draft for the page ""##PAGE##"" was created or modified by ##USER## on ##DATETIME## and is currently held for **approval**.
 Author's comment: ##COMMENT##.
 
 The draft can be found and edited at the following address:
@@ -172,7 +257,6 @@ Thank you.
 
 Best regards,
 The ##WIKITITLE## Team.";
-
+        */
 	}
-
 }
