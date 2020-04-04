@@ -8,6 +8,7 @@ using ScrewTurn.Wiki.PluginFramework;
 using ScrewTurn.Wiki.Web.Code;
 using ScrewTurn.Wiki.Web.Code.Attributes;
 using ScrewTurn.Wiki.Web.Localization.Messages;
+using ScrewTurn.Wiki.Web.Models.Admin;
 using ScrewTurn.Wiki.Web.Models.Admin.Home;
 
 namespace ScrewTurn.Wiki.Web.Controllers.Admin
@@ -22,6 +23,16 @@ namespace ScrewTurn.Wiki.Web.Controllers.Admin
         /// <param name="settings"></param>
         public HomeController(ApplicationSettings settings) : base(settings)
         {
+        }
+
+        [HttpGet]
+        [Route("Home")]
+        public ActionResult Home()
+        {
+            var model = new AdminBaseModel();
+            base.PrepareModel(model);
+
+            return View("~/Views/Admin/Home/Index.cshtml", model);
         }
 
         [HttpGet]

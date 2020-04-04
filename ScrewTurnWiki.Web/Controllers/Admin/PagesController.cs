@@ -18,7 +18,7 @@ namespace ScrewTurn.Wiki.Web.Controllers.Admin
         {
         }
 
-        [Route]
+        [Route("Pages")]
         public ActionResult Index()
         {
             return new ContentResult();

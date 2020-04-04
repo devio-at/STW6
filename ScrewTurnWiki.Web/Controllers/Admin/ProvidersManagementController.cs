@@ -19,6 +19,7 @@ namespace ScrewTurn.Wiki.Web.Controllers.Admin
         }
 
         // GET: AdminHome
+        [Route("ProvidersManagement")]
         public ActionResult Index()
         {
             return new ContentResult();

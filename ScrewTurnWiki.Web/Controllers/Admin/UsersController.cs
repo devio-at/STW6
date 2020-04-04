@@ -21,6 +21,7 @@ namespace ScrewTurn.Wiki.Web.Controllers.Admin
         }
 
         // GET: AdminHome
+        [Route("Users")]
         public ActionResult Index()
         {
             return new ContentResult();

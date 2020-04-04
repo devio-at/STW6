@@ -3,6 +3,7 @@
 @using ScrewTurn.Wiki.Web.Localization.Admin
 @using ScrewTurn.Wiki.Web.Localization.Messages
 @using ScrewTurnWiki.Web
+@model ScrewTurn.Wiki.Web.Models.Admin.AdminBaseModel
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html dir="@Model.Direction" xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -53,7 +54,7 @@
         <ul class="sidebar-menu">
             @if (Model.HomeAvailable)
             {
-                <li class="menu-item-title"><a href="#">@Admin.LnkSelectAdminHome_Text</a></li>
+                <li class="menu-item-title">@Html.ActionLink(@Admin.LnkSelectAdminHome_Text, "Home", "Home", null, null)</li>
                 <li class="dropdown" style="@Model.HomeDisplayStyle">
                     <ul>
                         <li>

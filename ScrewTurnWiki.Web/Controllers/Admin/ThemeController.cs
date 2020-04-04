@@ -19,6 +19,7 @@ namespace ScrewTurn.Wiki.Web.Controllers.Admin
         }
 
         // GET: AdminHome
+        [Route("Theme")]
         public ActionResult Index()
         {
             return new ContentResult();

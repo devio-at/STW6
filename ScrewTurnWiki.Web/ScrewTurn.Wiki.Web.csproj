@@ -530,6 +530,7 @@
     <Content Include="Views\Admin\Groups\UserGroups.cshtml" />
     <Content Include="Views\Admin\Groups\EditUserGroup.cshtml" />
     <Content Include="Views\Admin\Common\AclActionsSelector.cshtml" />
+    <Content Include="Views\Admin\Home\Index.cshtml" />
     <None Include="Views\Attachment\AttachmentViewer.cshtml" />
     <Content Include="Views\Common\PageNotFound.cshtml" />
     <Content Include="Views\History\Diff.cshtml" />
