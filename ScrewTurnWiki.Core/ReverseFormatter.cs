@@ -8,6 +8,7 @@ using System.Web;
 using System.Xml;
 using System.IO;
 using ScrewTurn.Wiki.PluginFramework;
+using Sgml;
 
 namespace ScrewTurn.Wiki
 {
@@ -877,7 +878,8 @@ namespace ScrewTurn.Wiki
         private XmlDocument FromHTML(TextReader reader)
         {
             // setup SgmlReader
-            Sgml.SgmlReader sgmlReader = new Sgml.SgmlReader();
+            //Sgml.SgmlReader 
+            var sgmlReader = new SgmlReader();
             sgmlReader.DocType = "HTML";
             sgmlReader.WhitespaceHandling = WhitespaceHandling.None;
 
@@ -901,7 +903,7 @@ namespace ScrewTurn.Wiki
         public string ReverseFormat(string wiki, string html)
         {
             /*Fix Ckeditors's bug*/
-            html = html.Replace("&nbsp;", "<br />");
+            html = html.Replace("<br>", "<br />");
 
             _wiki = wiki;
             StringReader strReader = new StringReader(html.Trim('\n', '\r'));

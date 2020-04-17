@@ -43,7 +43,8 @@ namespace ScrewTurn.Wiki {
 			string nspace = GetCurrentNamespace() + "";
 			if(!string.IsNullOrEmpty(nspace)) {
 				// Verify that namespace exists
-				if(Pages.FindNamespace(Tools.DetectCurrentWiki(), nspace) == null) HttpContext.Current.Response.Redirect("~/PageNotFound?Page=" + pageName);
+				if(Pages.FindNamespace(Tools.DetectCurrentWiki(), nspace) == null)
+                    HttpContext.Current.Response.Redirect("~/PageNotFound?Page=" + pageName);
 			}
 			// Trim Namespace. from pageName
 			if(!string.IsNullOrEmpty(nspace)) pageName = pageName.Substring(nspace.Length + 1);
@@ -126,16 +127,18 @@ namespace ScrewTurn.Wiki {
         /// Redirects the current response to the specified URL, properly appending the current namespace if any.
         /// </summary>
         /// <param name="target">The target URL.</param>
+        [Obsolete("use return RedirectTo()")]
         public static void Redirect(string target) {
 			Redirect(target, true);
 		}
 
-		/// <summary>
-		/// Redirects the current response to the specified URL, appending the current namespace if requested.
-		/// </summary>
-		/// <param name="target">The target URL.</param>
-		/// <param name="addNamespace">A value indicating whether to add the namespace.</param>
-		public static void Redirect(string target, bool addNamespace)
+        /// <summary>
+        /// Redirects the current response to the specified URL, appending the current namespace if requested.
+        /// </summary>
+        /// <param name="target">The target URL.</param>
+        /// <param name="addNamespace">A value indicating whether to add the namespace.</param>
+        [Obsolete("use return RedirectTo()")]
+        public static void Redirect(string target, bool addNamespace)
 		{
             if (!target.StartsWith("/"))
 		        target = String.Concat("/", target);
@@ -206,22 +209,24 @@ namespace ScrewTurn.Wiki {
             destination.Append(BuildUrl(wiki, chunks));
 		}
 
-		/// <summary>
-		/// Redirects to the default page of the current namespace and wiki.
-		/// </summary>
-		/// <param name="wiki">The wiki.</param>
-		public static void RedirectHome(string wiki) {
+#if not_used
+        /// <summary>
+        /// Redirects to the default page of the current namespace and wiki.
+        /// </summary>
+        /// <param name="wiki">The wiki.</param>
+        public static void RedirectHome(string wiki) {
 			Redirect(BuildUrl(wiki, Settings.GetDefaultPage(wiki), GlobalSettings.PageExtension));
 		}
+#endif
 
-	    /// <summary>
-	    /// Builds a URL properly prepending the namespace to the URL.
-	    /// </summary>
-	    /// <param name="wiki">The wiki.</param>
-	    /// <param name="nspace">The namespace</param>
-	    /// <param name="chunks">The chunks used to build the URL.</param>
-	    /// <returns>The complete URL.</returns>
-	    public static string BuildWikiUrl(string wiki, string nspace, params string[] chunks)
+        /// <summary>
+        /// Builds a URL properly prepending the namespace to the URL.
+        /// </summary>
+        /// <param name="wiki">The wiki.</param>
+        /// <param name="nspace">The namespace</param>
+        /// <param name="chunks">The chunks used to build the URL.</param>
+        /// <returns>The complete URL.</returns>
+        public static string BuildWikiUrl(string wiki, string nspace, params string[] chunks)
         {
             if (chunks == null) throw new ArgumentNullException("chunks");
             if (chunks.Length == 0) return ""; // Shortcut

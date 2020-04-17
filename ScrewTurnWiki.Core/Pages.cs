@@ -921,7 +921,7 @@ namespace ScrewTurn.Wiki {
 			body = body.Replace("##PAGE##", title).Replace("##USER##", displayName).Replace("##DATETIME##",
 				Preferences.AlignWithServerTimezone(wiki, DateTime.UtcNow).ToString(Settings.GetDateTimeFormat(wiki))).Replace("##COMMENT##",
 				string.IsNullOrEmpty(comment) ? Exchanger.ResourceExchanger.GetResource("None") : comment).Replace("##LINK##",
-				Settings.GetMainUrl(wiki).TrimEnd('/') + UrlTools.BuildUrl(wiki, "Edit.aspx?Page=", Tools.UrlEncode(currentPageFullName))).Replace("##LINK2##",
+				Settings.GetMainUrl(wiki).TrimEnd('/') + UrlTools.BuildUrl(wiki, "Edit?Page=", Tools.UrlEncode(currentPageFullName))).Replace("##LINK2##",
 				Settings.GetMainUrl(wiki) + "AdminPages.aspx?Admin=" + Tools.UrlEncode(currentPageFullName)).Replace("##WIKITITLE##",
 				Settings.GetWikiTitle(wiki));
 
