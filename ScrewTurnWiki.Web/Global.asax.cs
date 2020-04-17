@@ -68,6 +68,7 @@ namespace ScrewTurn.Wiki.Web
 
             return;
 
+#if not_used
             string physicalPath = null;
 
             try
@@ -150,6 +151,7 @@ namespace ScrewTurn.Wiki.Web
                 //}
             }
             ScrewTurn.Wiki.UrlTools.RouteCurrentRequest();
+#endif
         }
 
         protected void Application_Error(object sender, EventArgs e)
@@ -180,7 +182,9 @@ namespace ScrewTurn.Wiki.Web
             }
             catch { }
             EmailTools.NotifyError(ex, url);
-            if (!Request.PhysicalPath.ToLowerInvariant().Contains("error")) ScrewTurn.Wiki.UrlTools.Redirect("Error"); // TODO: RedirectToAction
+
+#warning don't hide original Error screen
+            // if (!Request.PhysicalPath.ToLowerInvariant().Contains("error")) ScrewTurn.Wiki.UrlTools.Redirect("Error"); // TODO: RedirectToAction
         }
 
         protected void Application_End(object sender, EventArgs e)
