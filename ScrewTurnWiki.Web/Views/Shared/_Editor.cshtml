@@ -1,0 +1,428 @@
+﻿@using ScrewTurn.Wiki.Web.Models.Edit
+@using ScrewTurn.Wiki
+@using msg = ScrewTurn.Wiki.Web.Localization.Messages.Messages
+@using resx = ScrewTurn.Wiki.Web.Localization.Common.Editor
+@model EditModel
+@{
+    var editorImage = Url.Content("~/Content/Editor");
+    var doubleAt = "@@";
+
+    var currentNamespace = Tools.DetectCurrentNamespaceInfo();
+    string currentNamespaceName = currentNamespace != null ? currentNamespace.Name + "." : "";
+}
+
+<script type="text/javascript" src="~/Scripts/Scripts.js"></script>
+<script type="text/javascript">
+<!--
+    var MarkupControl = "@Html.IdFor(m => m.EditorMarkup)";
+    var VisualControl = "lblWYSIWYG";
+    var CurrentPage = "@Model.KeepAliveCurrentPage";
+    var CurrentNamespace = "@Tools.UrlEncode(currentNamespaceName)";
+    // -->
+</script>
+<script type="text/javascript" src="~/Scripts/Editor.js"></script>
+
+@*<%@ Register TagName="ClientImageBrowser" TagPrefix="st" Src="~/ClientImageBrowser.ascx" %>*@
+@*<asp:Literal ID="lblStrings" runat="server" meta:resourcekey="lblStringsResource3" />*@
+
+<div id="TabContainerDiv">
+    <input type="button" id="btnWikiMarkup" value="@resx.btnWikiMarkup_Text" class="@(Model.EditorInWysiwyg ? "tabbutton" : "tabbuttonactive")" />
+    <input type="button" id="btnVisual" value="@resx.btnVisual_Text" class="@(!Model.EditorInWysiwyg ? "tabbutton" : "tabbuttonactive")" />
+    <input type="button" id="btnPreview" value="@resx.btnPreview_Text" class="tabbutton"  />
+    <span id="ProgressSpan" style="display: none;">
+        <img src="@(editorImage)/Progress.gif" alt="Please wait..." style="margin-bottom: -2px;" />
+    </span>
+</div>
+
+<div id="mlvEditor">
+
+    <div id="viwStandard" style="@(Model.EditorInWysiwyg ? "display: none" : "")">
+
+        <div class="toolbar">
+            <div class="sizebuttons">
+                <input type="image" id="btnBiggerMarkup" src="@(editorImage)/EditorBigger.png"
+                       title="@resx.btnBiggerMarkup_ToolTip"
+                       class="helperbutton"
+                       style="border-width:0px;"
+                       onclick="javascript:return Editor.IncreaseHeight(MarkupControl);" />
+                <input type="image" id="btnSmallerMarkup" src="@(editorImage)/EditorSmaller.png"
+                       title="@resx.btnSmallerMarkup_ToolTip" class="helperbutton"
+                       style="border-width:0px;"
+                       onclick="javascript:return Editor.DecreaseHeight(MarkupControl);" />
+            </div>
+
+            <div id="MarkupToolbarDiv">
+                <a href="#" title="@msg.BoldTitle" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('\'\'\'', '\'\'\'');">
+                    <img src="@(editorImage)/Bold.png" alt="@msg.Bold" />
+                </a>
+                <a href="#" title="@msg.ItalicTitle" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('\'\'', '\'\'');">
+                    <img src="@(editorImage)/Italic.png" alt="@msg.Italic" />
+                </a>
+                <a href="#" title="@msg.UnderlinedTitle" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('__', '__');">
+                    <img src="@(editorImage)/Underlined.png" alt="@msg.Underlined" />
+                </a>
+                <a href="#" title="@msg.StrikedTitle" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('--', '--');">
+                    <img src="@(editorImage)/Striked.png" alt="@msg.Striked" />
+                </a>
+                <a href="#" title="@msg.H1Title" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('==', '==');">
+                    <img src="@(editorImage)/H1.png" alt="@msg.H1" />
+                </a>
+                <a href="#" title="@msg.H2Title" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('===', '===');">
+                    <img src="@(editorImage)/H2.png" alt="@msg.H2" />
+                </a>
+                <a href="#" title="@msg.H3Title" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('====', '====');">
+                    <img src="@(editorImage)/H3.png" alt="@msg.H3" />
+                </a>
+                <a href="#" title="@msg.H4Title" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('=====', '=====');">
+                    <img src="@(editorImage)/H4.png" alt="@msg.H4" />
+                </a>
+                <a href="#" title="@msg.SuperscriptTitle" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('<sup>', '</sup>');">
+                    <img src="@(editorImage)/Superscript.png" alt="@msg.Superscript" />
+                </a>
+                <a href="#" title="@msg.SubscriptTitle" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('<sub>', '</sub>');">
+                    <img src="@(editorImage)/Subscript.png" alt="@msg.Subscript" />
+                </a>
+                <a href="#" title="@msg.PageLinkTitle" class="toolbarbutton" onclick="javascript:return Editor.OpenPopup('PageLink');">
+                    <img src="@(editorImage)/PageLink.png" alt="@msg.PageLink" />
+                </a>
+                <a href="#" title="@msg.FileLinkTitle" class="toolbarbutton" onclick="javascript:return Editor.OpenPopup('FileLink');">
+                    <img src="@(editorImage)/File.png" alt="@msg.FileLink" />
+                </a>
+                <a href="#" title="@msg.ExternalLinkTitle" class="toolbarbutton" onclick="javascript:return Editor.OpenPopup('ExternalLink');">
+                    <img src="@(editorImage)/Link.png" alt="@msg.ExternalLink" />
+                </a>
+                <a href="#" title="@msg.ImageTitle2" class="toolbarbutton" onclick="javascript:return Editor.OpenPopup('Image');">
+                    <img src="@(editorImage)/Image.png" alt="@msg.Image" />
+                </a>
+                <a href="#" title="@msg.AnchorTitle2" class="toolbarbutton" onclick="javascript:return Editor.OpenPopup('Anchor$' + ExtractAnchors());">
+                    <img src="@(editorImage)/Anchor.png" alt="@msg.Anchor" />
+                </a>
+                <a href="#" title="@msg.LineBreakTitle" class="toolbarbutton" onclick="javascript:return Editor.InsertMarkup('{br}');">
+                    <img src="@(editorImage)/BR.png" alt="@msg.LineBreak" />
+                </a>
+                <a href="#" title="@msg.SnippetsTitle" id="SnippetsMenuLinkMarkup" class="toolbarbutton" onclick="javascript:return Editor.ShowSnippetsMenuMarkup(event);">
+                    <img src="@(editorImage)/Snippet.png" alt="@msg.Snippets" />
+                </a>
+                <a href="#" title="@msg.SpecialTagsTitle" id="SpecialTagsMenuLinkMarkup" class="toolbarbutton" onclick="javascript:return Editor.ShowSpecialTagsMenuMarkup(event);">
+                    <img src="@(editorImage)/SpecialTags.png" alt="@msg.SpecialTags" />
+                </a>
+                <a href="#" title="@msg.HRTitle" class="toolbarbutton" onclick="javascript:return Editor.InsertMarkup('----');">
+                    <img src="@(editorImage)/HR.png" alt="@msg.HR" />
+                </a>
+                <a href="#" title="@msg.CodeInlineTitle" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('{{', '}}');">
+                    <img src="@(editorImage)/Code.png" alt="@msg.CodeInline" />
+                </a>
+                <a href="#" title="@msg.CodeEscapedTitle" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('@(doubleAt)', '@(doubleAt)');">
+                    <img src="@(editorImage)/Pre.png" alt="@msg.CodeEscaped" />
+                </a>
+                <a href="#" title="@msg.EscapeTitle" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('<esc>', '</esc>');">
+                    <img src="@(editorImage)/Escape.png" alt="@msg.Escape" />
+                </a>
+                <a href="#" title="@msg.NoWikiTitle" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('<nowiki>', '</nowiki>');">
+                    <img src="@(editorImage)/NoWiki.png" alt="@msg.NoWiki" />
+                </a>
+                <a href="#" title="@msg.NoBrTitle" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('<nobr>', '</nobr>');">
+                    <img src="@(editorImage)/NoBr.png" alt="@msg.NoBr" />
+                </a>
+                <a href="#" title="@msg.WrapperBoxTitle" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('(((', ')))');">
+                    <img src="@(editorImage)/Box.png" alt="@msg.WrapperBox" />
+                </a>
+                <a href="#" title="@msg.CommentTitle" class="toolbarbutton" onclick="javascript:return Editor.WrapSelectedMarkup('<!--', '-->');">
+                    <img src="@(editorImage)/Comment.png" alt="@msg.Comment" />
+                </a>
+                <a href="#" title="@msg.SymbolsTitle" id="SymbolsMenuLinkMarkup" class="toolbarbutton" onclick="javascript:return Editor.ShowSymbolsMenuMarkup(event);">
+                    <img src="@(editorImage)/Symbol.png" alt="@msg.Symbols" />
+                </a>
+            </div>
+        </div>
+
+        @Html.TextAreaFor(m => m.EditorMarkup, 2, 20, new { style = "width: 700px; min-width: 99%; max-width: 99%; height: 400px" })
+
+    </div>
+
+    <div id="viwVisual" style="@(!Model.EditorInWysiwyg ? "display: none" : "")">
+
+        <div class="toolbar">
+            <div class="sizebuttons">
+                <input type="image" id="btnBiggerMarkupVisual" src="@(editorImage)/EditorBigger.png"
+                       title="@resx.btnBiggerMarkupVisual_ToolTip"
+                       class="helperbutton"
+                       style="border-width:0px;"
+                       onclick="javascript:return Editor.IncreaseHeight('iframe');" />
+                <input type="image" id="btnSmallerMarkupVisual" src="@(editorImage)/EditorSmaller.png"
+                       title="@resx.btnSmallerMarkupVisual_ToolTip" class="helperbutton"
+                       style="border-width:0px;"
+                       onclick="javascript:return Editor.DecreaseHeight('iframe');" />
+            </div>
+
+            <div id="VisualToolbarDiv">
+                <a href="#" title="@msg.BoldTitle" class="toolbarbutton" onclick="javascript:return Editor.execCmd('Bold',false,null);">
+                    <img src="@(editorImage)/Bold.png" alt="@msg.Bold" />
+                </a>
+                <a href="#" title="@msg.ItalicTitle" class="toolbarbutton" onclick="javascript:return Editor.execCmd('Italic',false,null);">
+                    <img src="@(editorImage)/Italic.png" alt="@msg.Italic" />
+                </a>
+                <a href="#" title="@msg.UnderlinedTitle" class="toolbarbutton" onclick="javascript:return Editor.execCmd('Underline',false,null);">
+                    <img src="@(editorImage)/Underlined.png" alt="@msg.Underlined" />
+                </a>
+                <a href="#" title="@msg.StrikedTitle" class="toolbarbutton" onclick="javascript:return Editor.execCmd('Strikethrough',false,null);">
+                    <img src="@(editorImage)/Striked.png" alt="@msg.Striked" />
+                </a>
+                <a href="#" title="@msg.H1Title" class="toolbarbutton" onclick="javascript:return Editor.wrapWithTagClass('h1','separator');">
+                    <img src="@(editorImage)/H1.png" alt="@msg.H1" />
+                </a>
+                <a href="#" title="@msg.H2Title" class="toolbarbutton" onclick="javascript:return Editor.wrapWithTagClass('h2','separator');">
+                    <img src="@(editorImage)/H2.png" alt="@msg.H2" />
+                </a>
+                <a href="#" title="@msg.H3Title" class="toolbarbutton" onclick="javascript:return Editor.wrapWithTagClass('h3','separator');">
+                    <img src="@(editorImage)/H3.png" alt="@msg.H3" />
+                </a>
+                <a href="#" title="@msg.H4Title" class="toolbarbutton" onclick="javascript:return Editor.wrapWithTagClass('h4','separator');">
+                    <img src="@(editorImage)/H4.png" alt="@msg.H4" />
+                </a>
+                <a href="#" title="@msg.SuperscriptTitle" class="toolbarbutton" onclick="javascript:return Editor.execCmd('Superscript',false,null);">
+                    <img src="@(editorImage)/Superscript.png" alt="@msg.Superscript" />
+                </a>
+                <a href="#" title="@msg.SubscriptTitle" class="toolbarbutton" onclick="javascript:return Editor.execCmd('Subscript',false,null);">
+                    <img src="@(editorImage)/Subscript.png" alt="@msg.Subscript" />
+                </a>
+                <a href="#" title="@msg.UnorderedListTitle" class="toolbarbutton" onclick="javascript:return Editor.insertList('ul');">
+                    <img src="@(editorImage)/UL.png" alt="@msg.UnorderedList" />
+                </a>
+                <a href="#" title="@msg.OrderedListTitle" class="toolbarbutton" onclick="javascript:return Editor.insertList('ol');">
+                    <img src="@(editorImage)/OL.png" alt="@msg.OrderedList" />
+                </a>
+                <a href="#" title="@msg.PageLinkTitle" class="toolbarbutton" onclick="javascript:return Editor.OpenPopup('PageLink','WYSIWYG');">
+                    <img src="@(editorImage)/PageLink.png" alt="@msg.PageLink" />
+                </a>
+                <a href="#" title="@msg.FileLinkTitle" class="toolbarbutton" onclick="javascript:return Editor.OpenPopup('FileLink','WYSIWYG');">
+                    <img src="@(editorImage)/File.png" alt="@msg.FileLink" />
+                </a>
+                <a href="#" title="@msg.ExternalLinkTitle" class="toolbarbutton" onclick="javascript:return Editor.OpenPopup('ExternalLink','WYSIWYG');">
+                    <img src="@(editorImage)/Link.png" alt="@msg.ExternalLink" />
+                </a>
+                <a href="#" title="@msg.ImageTitle2" class="toolbarbutton" onclick="javascript:return Editor.OpenPopup('Image','WYSIWYG');">
+                    <img src="@(editorImage)/Image.png" alt="@msg.Image" />
+                </a>
+                <a href="#" title="@msg.AnchorTitle2" class="toolbarbutton" onclick="javascript:return Editor.OpenPopup('Anchor$' + Editor.ExtractAnchorsWYSIWYG(),'WYSIWYG');">
+                    <img src="@(editorImage)/Anchor.png" alt="@msg.Anchor" />
+                </a>
+                <a href="#" title="@msg.SnippetsTitle" id="SnippetsMenuLinkMarkup" class="toolbarbutton" onclick="javascript:return Editor.ShowSnippetsMenuMarkup(event);">
+                    <img src="@(editorImage)/Snippet.png" alt="@msg.Snippets" />
+                </a>
+                <a href="#" title="@msg.SpecialTagsTitle" id="SpecialTagsMenuLinkMarkup" class="toolbarbutton" onclick="javascript:return Editor.ShowSpecialTagsMenuMarkup(event);">
+                    <img src="@(editorImage)/SpecialTags.png" alt="@msg.SpecialTags" />
+                </a>
+                <a href="#" title="@msg.HRTitle" class="toolbarbutton" onclick="javascript:return Editor.insertBreak();">
+                    <img src="@(editorImage)/HR.png" alt="@msg.HR" />
+                </a>
+                <a href="#" title="@msg.CodeInlineTitle" class="toolbarbutton" onclick="javascript:return Editor.wrapWithTag('code');">
+                    <img src="@(editorImage)/Code.png" alt="@msg.CodeInline" />
+                </a>
+                <a href="#" title="@msg.CodeEscapedTitle" class="toolbarbutton" onclick="javascript:return Editor.wrapWithTag('pre');">
+                    <img src="@(editorImage)/Pre.png" alt="@msg.CodeEscaped" />
+                </a>
+                <a href="#" title="@msg.EscapeTitle" class="toolbarbutton" onclick="javascript:return Editor.wrapWithTag('esc');">
+                    <img src="@(editorImage)/Escape.png" alt="@msg.Escape" />
+                </a>
+                <a href="#" title="@msg.WrapperBoxTitle" class="toolbarbutton" onclick="javascript:return Editor.wrapWithTagClass('div', 'box');">
+                    <img src="@(editorImage)/Box.png" alt="@msg.WrapperBox" />
+                </a>
+                <a href="#" title="@msg.SymbolsTitle" id="SymbolsMenuLinkMarkup" class="toolbarbutton" onclick="javascript:return Editor.ShowSymbolsMenuMarkup(event);">
+                    <img src="@(editorImage)/Symbol.png" alt="@msg.Symbols" />
+                </a>
+            </div>
+        </div>
+
+        <div style="display: none;">
+            @Html.TextArea("lblWYSIWYG", Model.EditorWysiwyg)
+        </div>
+
+        <div id="WysiwygDiv">
+            <iframe id="iframe" name="iframe" onload="javascript:return Editor.iframe_onload();" src="@Url.Action("IframeEditor", "Editor")" style="width: 100%; height: 400px;" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    <div id="viwPreview" style="display: none">
+
+        <div class="toolbar" style="padding-top: 8px; padding-bottom: 0px;">
+            <div id="lblPreviewWarning" class="resulterror">
+                @Html.Raw(resx.lblPreviewWarning_Text)
+            </div>
+        </div>
+
+        <div id="PreviewDiv" style="border: solid 4px #999999; padding: 8px; height: 450px; overflow: auto;">
+            <div id="lblPreview"></div>
+        </div>
+    </div>
+</div> @*asp:MultiView>*@
+
+
+<div id="SnippetsMenuDiv" class="menucontainer" style="display: none;">
+    <div id="lblSnippets"></div>
+</div>
+
+<div id="SpecialTagsMenuDiv" class="menucontainer" style="display: none;">
+    <div id="lblCustomSpecialTags"></div>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{WIKITITLE}');" class="menulink">{WikiTitle}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{UP}');" class="menulink">{Up}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{TOP}');" class="menulink">{Top}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{TOC}');" class="menulink">{TOC}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{THEMEPATH}');" class="menulink">{ThemePath}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{RSSPAGE}');" class="menulink">{RSSPage}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{WIKIVERSION}');" class="menulink">{WikiVersion}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{MAINURL}');" class="menulink">{MainURL}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{PAGECOUNT}');" class="menulink">{PageCount}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{PAGECOUNT(*)}');" class="menulink">{PageCount(*)}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{USERNAME}');" class="menulink">{Username}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{LOGINLOGOUT}');" class="menulink">{LoginLogout}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{CLEAR}');" class="menulink">{Clear}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{CLOUD}');" class="menulink">{Cloud}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{SEARCHBOX}');" class="menulink">{SearchBox}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{PAGENAME}');" class="menulink">{PageName}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{NAMESPACE}');" class="menulink">{Namespace}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{CATEGORIES}');" class="menulink">{Categories}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{NAMESPACEDROPDOWN}');" class="menulink">{NamespaceDropDown}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{NAMESPACELIST}');" class="menulink">{NamespaceList}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{ORPHANS}');" class="menulink">{Orphans}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{WANTED}');" class="menulink">{Wanted}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{INCOMING}');" class="menulink">{Incoming}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{OUTGOING}');" class="menulink">{Outgoing}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{RECENTCHANGES}');" class="menulink">{RecentChanges}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('{RECENTCHANGES(*)}');" class="menulink">{RecentChanges(*)}</a>
+</div>
+
+<div id="SymbolsMenuDiv" class="menucontainer" style="display: none;">
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('&amp;#0123;');" class="menulinkcompact">{</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('&amp;#0125;');" class="menulinkcompact">}</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('&amp;#0091;');" class="menulinkcompact">[</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('&amp;#0093;');" class="menulinkcompact">]</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('&amp;lt;');" class="menulinkcompact">&lt;</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('&amp;gt;');" class="menulinkcompact">&gt;</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('&amp;laquo;');" class="menulinkcompact">&laquo;</a>
+    <a href="#" onclick="javascript:return Editor.InsertMarkup('&amp;raquo;');" class="menulinkcompact">&raquo;</a>
+    <br />
+    <!-- More here... -->
+</div>
+
+@* if (Editor.ToolbarVisible) ...
+    <asp:Literal ID="lblToolbarInit" runat="server" />
+*@
+
+
+@Html.HiddenFor(m => m.EditorInWysiwyg)
+<script type="text/javascript">
+    $(function () {
+
+        var reverseFormat = function (success) {
+            var t = $("#lblWYSIWYG").val();
+            var html = t.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+            $("#lblPreview").html(html);
+            $("#ProgressSpan").show();
+
+            $.ajax({
+                url: "@Url.Action("ReverseFormat", "Editor")",
+                method: "POST",
+                data: { html: html },
+                success: function (data) {
+                    $("#@Html.IdFor(m => m.EditorMarkup)").val(data);
+                    success();
+                }
+            });
+        };
+
+        var format = function (success) {
+            var markup = $("#@Html.IdFor(m => m.EditorMarkup)").val();
+
+            $.ajax({
+                url: "@Url.Action("FormatHtml", "Editor")",
+                method: "POST",
+                data: { markup: markup },
+                success: function (data) {
+                    $("#lblWYSIWYG").val(data.wysiwyg);
+                    Editor.setHtml(data.wysiwyg);
+                    $("#lblPreview").html(data.preview);
+                    success();
+                }
+            });
+        };
+
+        $("#btnPreview").click(function () {
+
+            if ($("#btnPreview").hasClass("tabbuttonactive")) return;
+
+            var selectTab = function () {
+
+                $("#ProgressSpan").hide();
+
+                $("#viwStandard").hide();
+                $("#viwVisual").hide();
+                $("#viwPreview").show();
+
+                $("#btnWikiMarkup").removeClass("tabbuttonactive").addClass("tabbutton");
+                $("#btnVisual").removeClass("tabbuttonactive").addClass("tabbutton");
+                $("#btnPreview").removeClass("tabbutton").addClass("tabbuttonactive");
+            };
+
+            if ($("#EditorInWysiwyg").val().toLowerCase() == "true") {
+                reverseFormat(function () { selectTab() });
+            } else {
+                format(function () { selectTab() });
+            }
+        });
+
+        $("#btnWikiMarkup").click(function () {
+
+            var selectTab = function () {
+
+                $("#EditorInWysiwyg").val(false);
+
+                $("#ProgressSpan").hide();
+
+                $("#viwStandard").show();
+                $("#viwVisual").hide();
+                $("#viwPreview").hide();
+
+                $("#btnWikiMarkup").removeClass("tabbutton").addClass("tabbuttonactive");
+                $("#btnVisual").removeClass("tabbuttonactive").addClass("tabbutton");
+                $("#btnPreview").removeClass("tabbuttonactive").addClass("tabbutton");
+            };
+
+            if ($("#btnWikiMarkup").hasClass("tabbuttonactive")) return;
+
+            if ($("#btnPreview").hasClass("tabbuttonactive")) {
+                selectTab();
+                return;
+            }
+
+            reverseFormat(function () { selectTab() });
+        });
+
+        $("#btnVisual").click(function () {
+
+            var selectTab = function () {
+
+                $("#EditorInWysiwyg").val(true);
+
+                $("#ProgressSpan").hide();
+
+                $("#viwStandard").hide();
+                $("#viwVisual").show();
+                $("#viwPreview").hide();
+
+                $("#btnWikiMarkup").removeClass("tabbuttonactive").addClass("tabbutton");
+                $("#btnVisual").removeClass("tabbutton").addClass("tabbuttonactive");
+                $("#btnPreview").removeClass("tabbuttonactive").addClass("tabbutton");
+            };
+
+            if ($("#btnVisual").hasClass("tabbuttonactive")) return;
+
+            if ($("#btnPreview").hasClass("tabbuttonactive")) {
+                selectTab();
+                return;
+            }
+
+            format(function () { selectTab() });
+        });
+    });
+</script>

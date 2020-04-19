@@ -152,5 +152,30 @@ namespace ScrewTurn.Wiki.Web.Controllers
             model.Message.Text = "";
         }
 
+        // migrated from UrlTools
+        /// <summary>
+        /// Redirects the current response to the specified URL, properly appending the current namespace if any.
+        /// </summary>
+        /// <param name="target">The target URL.</param>
+        public ActionResult RedirectTo(string target)
+        {
+            return RedirectTo(target, true);
+        }
+
+        /// <summary>
+        /// Redirects the current response to the specified URL, appending the current namespace if requested.
+        /// </summary>
+        /// <param name="target">The target URL.</param>
+        /// <param name="addNamespace">A value indicating whether to add the namespace.</param>
+        public ActionResult RedirectTo(string target, bool addNamespace)
+        {
+            if (!target.StartsWith("/"))
+                target = String.Concat("/", target);
+            string nspace = HttpContext.Request["NS"];
+            if (string.IsNullOrEmpty(nspace) || !addNamespace)
+                return Redirect(target);    // HttpContext.Current.Response.Redirect(
+                                            //else HttpContext.Current.Response.Redirect(
+            return Redirect(target + (target.Contains("?") ? "&" : "?") + "NS=" + Tools.UrlEncode(nspace));
+        }
     }
 }

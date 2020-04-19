@@ -110,8 +110,10 @@ namespace ScrewTurn.Wiki.Web.Controllers
                 //UrlTools.Redirect(UrlTools.BuildUrl(CurrentWiki, "Default"));
             }
 
+#warning fix PrintSearchResults()
+#if PrintSearchResults
             model.SearchResults = new MvcHtmlString(PrintSearchResults(currentNamespace, page));
-
+#endif
 
             return View("PageNotFound", model);
         }
@@ -157,7 +159,7 @@ namespace ScrewTurn.Wiki.Web.Controllers
             sb.Append("</a> ");
             sb.Append(Messages.Or);
             sb.Append(@" <a href=""");
-            UrlTools.BuildUrl(CurrentWiki, sb, "Edit.aspx?Page=", Tools.UrlEncode(page)); // TODO:
+            UrlTools.BuildUrl(CurrentWiki, sb, "Edit?Page=", Tools.UrlEncode(page)); // TODO:
             sb.Append(@"""><b>");
             sb.Append(Messages.CreateThePage);
             sb.Append("</b></a> (");
@@ -167,9 +169,9 @@ namespace ScrewTurn.Wiki.Web.Controllers
             return sb.ToString();
         }
 
-        #endregion
+#endregion
 
-        #region Sitemap
+#region Sitemap
 
         [HttpGet]
         public ActionResult Sitemap()
@@ -234,7 +236,7 @@ namespace ScrewTurn.Wiki.Web.Controllers
             writer.WriteEndElement();
         }
 
-        #endregion
+#endregion
 
     }
 }

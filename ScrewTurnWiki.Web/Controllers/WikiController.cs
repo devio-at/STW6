@@ -327,7 +327,7 @@ namespace ScrewTurn.Wiki.Web.Controllers
                 model.EditLink = new MvcHtmlString(
                     string.Format(@"<a id=""EditLink"" title=""{0}"" href=""{1}"">{2}</a>",
                         Messages.EditThisPage,
-                        UrlTools.BuildUrl(CurrentWiki, "Edit.aspx?Page=", Tools.UrlEncode(CurrentPage.FullName)),
+                        UrlTools.BuildUrl(CurrentWiki, "Edit?Page=", Tools.UrlEncode(CurrentPage.FullName)),
                         Messages.Edit));
             }
 
@@ -876,7 +876,7 @@ namespace ScrewTurn.Wiki.Web.Controllers
                 sb.Append("<!--\n");
                 sb.Append("document.ondblclick = function() {\n");
                 sb.Append("document.location = '");
-                sb.Append(UrlTools.BuildUrl(CurrentWiki, "Edit.aspx?Page=", Tools.UrlEncode(CurrentPage.FullName)));
+                sb.Append(UrlTools.BuildUrl(CurrentWiki, "Edit?Page=", Tools.UrlEncode(CurrentPage.FullName)));
                 sb.Append("';\n");
                 sb.Append("}\n");
                 sb.Append("// -->\n");

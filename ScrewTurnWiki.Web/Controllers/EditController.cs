@@ -12,6 +12,7 @@ using ScrewTurn.Wiki.PluginFramework;
 using ScrewTurn.Wiki.Web.Code.Attributes;
 using ScrewTurn.Wiki.Web.Localization.Messages;
 using ScrewTurn.Wiki.Web.Models.Edit;
+using resx = ScrewTurn.Wiki.Web.Localization.Common.Edit;
 
 namespace ScrewTurn.Wiki.Web.Controllers
 {
@@ -25,11 +26,57 @@ namespace ScrewTurn.Wiki.Web.Controllers
         {
         }
 
+        void GetViewFlags(EditModel model, string page, PageContent currentPage)
+        {
+            var viewflags = new EditModel.ViewFlagsModel { SaveEnabled = true };
+            model.ViewFlags = viewflags;
+
+            if (page != null)
+            {
+                if (currentPage != null)
+                {
+                    viewflags.NameEnabled = false;
+                    viewflags.PageNameVisible = false;
+                    viewflags.ManualNameVisible = false;
+                }
+                else
+                {
+                    viewflags.PageNameVisible = true;
+                    viewflags.ManualNameVisible = false;
+                }
+            }
+            else
+            {
+                viewflags.MinorChangeVisible = false;
+                viewflags.SaveAsDraftVisible = false;
+
+                viewflags.NameEnabled = true;
+                viewflags.PageNameVisible = true;
+            }
+
+            if (Settings.GetAutoGeneratePageNames(CurrentWiki))
+            {
+                viewflags.PageNameVisible = false;
+                viewflags.ManualNameVisible = true;
+            }
+
+            var permissions = model.Permissions;
+            if (!permissions.CanEdit && permissions.CanEditWithApproval)
+            {
+                // Hard-wire status of draft and minor change checkboxes
+                viewflags.MinorChangeEnabled = false;
+                viewflags.SaveAsDraftEnabled = false;
+                model.SaveAsDraft = true;
+            }
+
+            viewflags.DisplayCaptcha = SessionFacade.LoginKey == null && !Settings.GetDisableCaptchaControl(CurrentWiki);
+
+        }
 
         [HttpGet]
         public ActionResult Edit(string page, int? section)
         {
-            PageContent currentPage = null;
+            //PageContent currentPage = null;
             int currentSection = -1;
             CurrentNamespace = Tools.DetectCurrentNamespace();
             bool isDraft = false;
@@ -67,13 +114,6 @@ namespace ScrewTurn.Wiki.Web.Controllers
 
             //if (!Page.IsPostBack)
             //{
-                PopulateCategories(new CategoryInfo[0], currentPage);
-
-                if (Settings.GetAutoGeneratePageNames(CurrentWiki))
-                {
-                    model.PageNameVisible = false;
-                    model.ManualNameVisible = true;
-                }
             //}
 
             // Load requested page, if any
@@ -89,13 +129,13 @@ namespace ScrewTurn.Wiki.Web.Controllers
                 //    name = model.Name.ToString();
                 //}
 
-                currentPage = Pages.FindPage(CurrentWiki, page);
+                var currentPage = Pages.FindPage(CurrentWiki, page);
 
                 // If page already exists, load the content and disable page name,
                 // otherwise pre-fill page name
                 if (currentPage != null)
                 {
-                    keepAlive.CurrentPage = currentPage.FullName;
+                    model.KeepAliveCurrentPage = /*keepAlive.CurrentPage =*/ currentPage.FullName;
 
                     // Look for a draft
                     PageContent draftContent = Pages.GetDraft(currentPage);
@@ -106,8 +146,9 @@ namespace ScrewTurn.Wiki.Web.Controllers
                         isDraft = true;
 
                     // Set current page for editor and attachment manager
-                    editor.CurrentPage = currentPage;
-                    attachmentManager.CurrentPage = currentPage;
+                    model.CurrentPage = currentPage;
+                    /*editor.CurrentPage = currentPage;
+                    attachmentManager.CurrentPage = currentPage;*/
 
                     if (section != null) currentSection = (int)section; //if (!int.TryParse(Request["Section"], out currentSection)) currentSection = -1;
 
@@ -115,31 +156,33 @@ namespace ScrewTurn.Wiki.Web.Controllers
                     //if (!Page.IsPostBack)
                     //{
                     // Set keywords, description
-                    model.Keywords =  SetKeywords(draftContent.Keywords);
-                        model.Description = draftContent.Description;
+                    model.Keywords = SetKeywords(draftContent.Keywords);
+                    model.Description = draftContent.Description;
 
-                    model.Name = new HtmlString(NameTools.GetLocalName(currentPage.FullName));
-                        model.NameEnabled = false;
-                        model.PageNameVisible = false;
-                        model.ManualNameVisible = false;
+                    model.Name = NameTools.GetLocalName(currentPage.FullName);
+                    //model.NameEnabled = false;
+                    //model.PageNameVisible = false;
+                    //model.ManualNameVisible = false;
 
-                        PopulateCategories(Pages.GetCategoriesForPage(currentPage), currentPage);
+                    model.Categories = PopulateCategories(Pages.GetCategoriesForPage(currentPage), currentPage);
 
-                        model.PageTitle = new HtmlString(draftContent.Title);
+                    model.PageTitle = draftContent.Title;
 
-                        // Manage section, if appropriate (disable if draft)
-                        if (!isDraft && currentSection != -1)
-                        {
-                            int startIndex, len;
-                            string dummy = "";
-                            ExtractSection(draftContent.Content, currentSection, out startIndex, out len, out dummy);
-                            editor.SetContent(draftContent.Content.Substring(startIndex, len), Settings.GetUseVisualEditorAsDefault(CurrentWiki));
-                        }
-                        else
-                        {
-                            // Select default editor view (WikiMarkup or Visual) and populate content
-                            editor.SetContent(draftContent.Content, Settings.GetUseVisualEditorAsDefault(CurrentWiki));
-                        }
+                    // Manage section, if appropriate (disable if draft)
+                    if (!isDraft && currentSection != -1)
+                    {
+                        int startIndex, len;
+                        string dummy = "";
+                        ExtractSection(draftContent.Content, currentSection, out startIndex, out len, out dummy);
+                        model.EditorMarkup = draftContent.Content.Substring(startIndex, len);
+                        //editor.SetContent(draftContent.Content.Substring(startIndex, len), Settings.GetUseVisualEditorAsDefault(CurrentWiki));
+                    }
+                    else
+                    {
+                        // Select default editor view (WikiMarkup or Visual) and populate content
+                        model.EditorMarkup = draftContent.Content;
+                        //editor.SetContent(draftContent.Content, Settings.GetUseVisualEditorAsDefault(CurrentWiki));
+                    }
                     //}
                 }
                 else
@@ -147,12 +190,13 @@ namespace ScrewTurn.Wiki.Web.Controllers
                     //// Pre-fill name, if not posted back
                     //if (!Page.IsPostBack)
                     //{
-                        // Set both name and title, as the NAME was provided from the query-string and must be preserved
-                        model.PageNameVisible = true;
-                        model.ManualNameVisible = false;
-                    model.Name = new HtmlString(NameTools.GetLocalName(page));
-                        model.PageTitle = model.Name;
-                        editor.SetContent(LoadTemplateIfAppropriate(model), Settings.GetUseVisualEditorAsDefault(CurrentWiki));
+                    // Set both name and title, as the NAME was provided from the query-string and must be preserved
+                    //model.PageNameVisible = true;
+                    //model.ManualNameVisible = false;
+                    model.Name = NameTools.GetLocalName(page);
+                    model.PageTitle = model.Name;
+                    model.EditorMarkup = LoadTemplateIfAppropriate(model);
+                    //editor.SetContent(LoadTemplateIfAppropriate(model), Settings.GetUseVisualEditorAsDefault(CurrentWiki));
                     //}
                 }
             }
@@ -160,15 +204,50 @@ namespace ScrewTurn.Wiki.Web.Controllers
             {
                 //if (!Page.IsPostBack)
                 //{
-                    model.MinorChangeVisible = false;
-                model.SaveAsDraftVisible = false;
-
-                    editor.SetContent(LoadTemplateIfAppropriate(model), Settings.GetUseVisualEditorAsDefault(CurrentWiki));
+                //model.MinorChangeVisible = false;
+                //model.SaveAsDraftVisible = false;
+                model.EditorMarkup = LoadTemplateIfAppropriate(model);
+                //editor.SetContent(LoadTemplateIfAppropriate(model), Settings.GetUseVisualEditorAsDefault(CurrentWiki));
                 //}
             }
 
+            model.Categories = PopulateCategories(new CategoryInfo[0], model.CurrentPage);
+
+            /*if (Settings.GetAutoGeneratePageNames(CurrentWiki))
+            {
+                model.PageNameVisible = false;
+                model.ManualNameVisible = true;
+            }*/
+
+            model.EditorInWysiwyg = Settings.GetUseVisualEditorAsDefault(CurrentWiki);
+
+            {
+                var currentPage = model.CurrentPage;
+                if (currentPage == null)    // && txtName.Visible) 
+                {
+                    currentPage = ScrewTurn.Wiki.Pages.FindPage(CurrentWiki, NameTools.GetFullName(DetectNamespace(), model.Name));
+                }
+                if (currentPage != null)
+                {
+                    // Try redirecting to proper section
+                    string anchor = null;
+                    if (currentSection != -1)
+                    {
+                        int start, len;
+                        ExtractSection(currentPage.Content, currentSection, out start, out len, out anchor);
+                    }
+
+                    model.CancelUrl = Tools.UrlEncode(currentPage.FullName) + GlobalSettings.PageExtension + (anchor != null ? ("#" + anchor + "_" + currentSection.ToString()) : "");
+                }
+                else
+                    model.CancelUrl = UrlTools.BuildUrl(CurrentWiki, "Default.aspx");
+            }
+
             // Here is centralized all permissions-checking code
-            var permissions = DetectPermissions(currentPage);
+            var permissions = DetectPermissions(model.CurrentPage);
+            model.Permissions = permissions;
+
+            GetViewFlags(model, page, model.CurrentPage);
 
             // Verify the following permissions:
             // - if new page, check for page creation perms
@@ -179,13 +258,14 @@ namespace ScrewTurn.Wiki.Web.Controllers
             // - CAPTCHA if enabled and user is anonymous
             // ---> recheck every time an action is performed
 
-            if (currentPage == null)
+            if (model.CurrentPage == null)
             {
                 // Check permissions for creating new pages
                 if (!permissions.CanCreateNewPages)
                 {
-                    if (SessionFacade.LoginKey == null) UrlTools.Redirect("Login?Redirect=" + Tools.UrlEncode(Tools.GetCurrentUrlFixed()));
-                    else UrlTools.Redirect("AccessDenied"); // TODO:
+                    if (SessionFacade.LoginKey == null)
+                        return RedirectTo("Login?Redirect=" + Tools.UrlEncode(Tools.GetCurrentUrlFixed()));
+                    return RedirectTo("AccessDenied"); // TODO:
                 }
             }
             else
@@ -193,126 +273,151 @@ namespace ScrewTurn.Wiki.Web.Controllers
                 // Check permissions for editing current page
                 if (!permissions.CanEdit && !permissions.CanEditWithApproval)
                 {
-                    if (SessionFacade.LoginKey == null) UrlTools.Redirect("Login?Redirect=" + Tools.UrlEncode(Tools.GetCurrentUrlFixed()));
-                    else UrlTools.Redirect("AccessDenied"); // TODO:
+                    if (SessionFacade.LoginKey == null)
+                        return RedirectTo("Login?Redirect=" + Tools.UrlEncode(Tools.GetCurrentUrlFixed()));
+
+                    return RedirectTo("AccessDenied"); // TODO:
                 }
             }
 
-            if (!permissions.CanEdit && permissions.CanEditWithApproval)
+            /*if (!permissions.CanEdit && permissions.CanEditWithApproval)
             {
                 // Hard-wire status of draft and minor change checkboxes
                 model.MinorChangeEnabled = false;
                 model.SaveAsDraftEnabled = false;
                 model.SaveAsDraft = true;
-            }
+            }*/
 
             // Setup categories
-            lstCategories.Enabled = permissions.CanManagePageCategories;
-            pnlCategoryCreation.Visible = permissions.CanCreateNewCategories;
+            // lstCategories.Enabled = permissions.CanManagePageCategories;
+            //pnlCategoryCreation.Visible = permissions.CanCreateNewCategories;
 
             // Setup attachment manager (require at least download permissions)
-            attachmentManager.Visible = permissions.CanDownloadAttachments;
+            //attachmentManager.Visible = permissions.CanDownloadAttachments;
 
             // CAPTCHA
-            model.DisplayCaptcha = SessionFacade.LoginKey == null && !Settings.GetDisableCaptchaControl(CurrentWiki);
+            // model.DisplayCaptcha = SessionFacade.LoginKey == null && !Settings.GetDisableCaptchaControl(CurrentWiki);
             //pnlCaptcha.Visible = SessionFacade.LoginKey == null && !Settings.GetDisableCaptchaControl(CurrentWiki);
             //captcha.Visible = pnlCaptcha.Visible;
 
             // Moderation notice
-            pnlApprovalRequired.Visible = !permissions.CanEdit && permissions.CanEditWithApproval;
+            //pnlApprovalRequired.Visible = !permissions.CanEdit && permissions.CanEditWithApproval;
 
             // Check and manage editing collisions
-            ManageEditingCollisions(currentPage, currentSection);
+            ManageEditingCollisions(model, model.CurrentPage, currentSection);
 
             //if (!Page.IsPostBack)
             //{
-                ManageTemplatesDisplay();
+                ManageTemplatesDisplay(model);
 
                 // Display draft status
-                ManageDraft(isDraft);
+                ManageDraft(model, isDraft);
             //}
 
-            return View(model);
+            return View("EditPage", model);
         }
 
         [HttpPost]
         [CaptchaValidator]
         [ValidateAntiForgeryToken]
-        protected void Edit(EditModel model)
-        {
-            bool isDraft = false;
-            bool wasVisible = model.PageNameVisible;
-            model.PageNameVisible = true;
-
-            if (!wasVisible && Settings.GetAutoGeneratePageNames(CurrentWiki) && model.NameEnabled)
+        public ActionResult Edit(EditModel model, string page)
+        {            
+            //? Page.Validate("nametitle");
+            //? Page.Validate("captcha");
+            if (!ModelState.IsValid)
             {
-                model.Name = new HtmlString(GenerateAutoName(model.PageTitle.ToString()));
-            }
-
-            model.Name = new HtmlString(model.Name.ToString().Trim());
-
-            Page.Validate("nametitle");
-            Page.Validate("captcha");
-            if (!Page.IsValid)
-            {
-                if (!rfvTitle.IsValid || !rfvName.IsValid || !cvName1.IsValid || !cvName2.IsValid)
+                /*? if (!rfvTitle.IsValid || !rfvName.IsValid || !cvName1.IsValid || !cvName2.IsValid)
                 {
                     model.PageNameVisible = true;
                     model.ManualNameVisible = false;
-                }
+                }*/
 
-                return;
+                return View("EditPage", model);
             }
 
-            model.PageNameVisible = wasVisible;
+            //model.PageNameVisible = wasVisible;
+
+            var currentPage = Pages.FindPage(CurrentWiki, model.PageTitle);
+            model.CurrentPage = currentPage;
+            var permissions = DetectPermissions(model.CurrentPage);
+            model.Permissions = permissions;
 
             // Check permissions
             if (currentPage == null)
             {
                 // Check permissions for creating new pages
-                if (!canCreateNewPages) UrlTools.Redirect("AccessDenied"); // TODO:
+                if (!permissions.CanCreateNewPages)
+                    return RedirectTo("AccessDenied"); // TODO:
             }
             else
             {
                 // Check permissions for editing current page
-                if (!canEdit && !canEditWithApproval) UrlTools.Redirect("AccessDenied"); // TODO:
+                if (!permissions.CanEdit && !permissions.CanEditWithApproval)
+                    return RedirectTo("AccessDenied"); // TODO:
             }
 
-            model.MinorChangeVisible = true;
-            model.SaveAsDraftVisible = true;
+            GetViewFlags(model, page, currentPage);
+
+            bool isDraft = false;
+            //bool wasVisible = model.PageNameVisible;
+            //model.PageNameVisible = true;
+
+            if (!model.ViewFlags.PageNameVisible && Settings.GetAutoGeneratePageNames(CurrentWiki) && model.ViewFlags.NameEnabled)
+            {
+                model.Name = GenerateAutoName(model.PageTitle);
+            }
+
+            model.Name = (model.Name ?? GenerateAutoName(model.PageTitle)).Trim();
+
+            model.ViewFlags.MinorChangeVisible = true;
+            model.ViewFlags.SaveAsDraftVisible = true;
 
             // Verify edit with approval
-            if (!canEdit && canEditWithApproval)
+            if (!permissions.CanEdit && permissions.CanEditWithApproval)
             {
                 model.SaveAsDraft = true;
+            }
+
+            var editorContent = model.EditorMarkup;
+            if (model.EditorInWysiwyg)
+            {
+                var reverseFormatter = new ReverseFormatter();
+                editorContent = reverseFormatter.ReverseFormat(CurrentWiki, model.EditorWysiwyg);
             }
 
             // Check for scripts (Administrators can always add SCRIPT tags)
             if (!SessionFacade.GetCurrentGroupNames(CurrentWiki).Contains(Settings.GetAdministratorsGroup(CurrentWiki)) && !Settings.GetScriptTagsAllowed(CurrentWiki))
             {
                 Regex r = new Regex(@"\<script.*?\>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                if (r.Match(editor.GetContent()).Success)
+                if (r.Match(editorContent).Success)
                 {
-                    lblResult.Text = @"<span style=""color: #FF0000;"">" + Messages.ScriptDetected + "</span>";
-                    return;
+                    model.ResultHtml = @"<span style=""color: #FF0000;"">" + Messages.ScriptDetected + "</span>";
+                    return View("EditPage", model);
                 }
             }
 
             bool redirect = true;
-            if (sender == btnSaveAndContinue) redirect = false;
+            //if (sender == btnSaveAndContinue) 
+            if (model.SaveAndContinue) redirect = false;
 
-            lblResult.Text = "";
-            lblResult.CssClass = "";
+            //lblResult.Text = "";
+            //lblResult.CssClass = "";
 
             string username = "";
             if (SessionFacade.LoginKey == null) username = Request.UserHostAddress;
             else username = SessionFacade.CurrentUsername;
 
-            IPagesStorageProviderV50 provider = FindAppropriateProvider();
+            IPagesStorageProviderV60 provider = FindAppropriateProvider(currentPage);
 
             // Create list of selected categories
             List<CategoryInfo> categories = new List<CategoryInfo>();
-            for (int i = 0; i < lstCategories.Items.Count; i++)
+            if (model.SelectedCategories != null)
+                foreach(var c in model.SelectedCategories)
+                {
+                    CategoryInfo cat = Pages.FindCategory(CurrentWiki, c);
+                    if (cat.Provider == provider) categories.Add(cat);
+                }
+            /*for (int i = 0; i < lstCategories.Items.Count; i++)
             {
                 if (lstCategories.Items[i].Selected)
                 {
@@ -321,16 +426,16 @@ namespace ScrewTurn.Wiki.Web.Controllers
                     // Sanity check
                     if (cat.Provider == provider) categories.Add(cat);
                 }
-            }
+            }*/
 
-            model.Comment = model.Comment.Trim();
-            model.Description =model.Description.Trim();
+            model.Comment = model.Comment?.Trim();
+            model.Description =model.Description?.Trim();
 
             SaveMode saveMode = SaveMode.Backup;
             if (model.SaveAsDraft) saveMode = SaveMode.Draft;
             if (model.MinorChange) saveMode = SaveMode.Normal;
 
-            if (model.NameEnabled)
+            if (model.ViewFlags.NameEnabled)
             {
                 // Find page, if inexistent create it
                 Log.LogEntry("Page update requested for " + model.Name.ToString(), EntryType.General, username, CurrentWiki);
@@ -341,14 +446,14 @@ namespace ScrewTurn.Wiki.Web.Controllers
                 if (pg == null)
                 {
                     saveMode = SaveMode.Normal;
-                    pg = Pages.SetPageContent(CurrentWiki, nspace, model.Name.ToString(), provider, model.PageTitle.ToString(), username, DateTime.UtcNow, model.Comment, editor.GetContent(),
-                    GetKeywords(), model.Description, saveMode);
-                    attachmentManager.CurrentPage = pg;
+                    pg = Pages.SetPageContent(CurrentWiki, nspace, model.Name.ToString(), provider, model.PageTitle.ToString(), username, DateTime.UtcNow, model.Comment, editorContent,
+                    GetKeywords(model), model.Description, saveMode);
+                    //? attachmentManager.CurrentPage = pg;
                 }
                 else
                 {
-                    Pages.SetPageContent(CurrentWiki, nspace, model.Name.ToString(), provider, model.PageTitle.ToString(), username, DateTime.UtcNow, model.Comment, editor.GetContent(),
-                        GetKeywords(), model.Description, saveMode);
+                    Pages.SetPageContent(CurrentWiki, nspace, model.Name.ToString(), provider, model.PageTitle.ToString(), username, DateTime.UtcNow, model.Comment, editorContent,
+                        GetKeywords(model), model.Description, saveMode);
                 }
                 // Save categories binding
                 Pages.Rebind(pg, categories.ToArray());
@@ -361,10 +466,10 @@ namespace ScrewTurn.Wiki.Web.Controllers
                 }
                 else isDraft = true;
 
-                ManageDraft();
+                ManageDraft(model, isDraft);
 
-                lblResult.CssClass = "resultok";
-                lblResult.Text = Messages.PageSaved;
+                model.ResultClass = "resultok";
+                model.ResultHtml = Messages.PageSaved;
 
                 // This is a new page, so only who has page management permissions can execute this code
                 // No notification must be sent for drafts awaiting approval
@@ -372,17 +477,20 @@ namespace ScrewTurn.Wiki.Web.Controllers
                 {
                     Collisions.CancelEditingSession(pg, username);
                     string target = UrlTools.BuildUrl(CurrentWiki, Tools.UrlEncode(model.Name.ToString()), GlobalSettings.PageExtension, "?NoRedirect=1");
-                    UrlTools.Redirect(target);
+                    return RedirectTo(target);
                 }
                 else
                 {
                     // Disable PageName, because the name cannot be changed anymore
-                    model.NameEnabled = false;
-                    model.ManualNameVisible = false;
+                    model.ViewFlags.NameEnabled = false;
+                    model.ViewFlags.ManualNameVisible = false;
                 }
             }
             else
             {
+                int currentSection;
+                if (!int.TryParse(Request["Section"], out currentSection)) currentSection = -1;
+
                 // Used for redirecting to a specific section after editing it
                 string anchor = "";
 
@@ -396,15 +504,17 @@ namespace ScrewTurn.Wiki.Web.Controllers
                     int start, len;
                     ExtractSection(currentPage.Content, currentSection, out start, out len, out anchor);
                     if (start > 0) sb.Append(currentPage.Content.Substring(0, start));
-                    sb.Append(editor.GetContent());
+                    sb.Append(editorContent);
                     if (start + len < currentPage.Content.Length - 1) sb.Append(currentPage.Content.Substring(start + len));
-                    Pages.SetPageContent(currentPage.Provider.CurrentWiki, NameTools.GetNamespace(currentPage.FullName), NameTools.GetLocalName(currentPage.FullName), model.PageTitle.ToString(), username, DateTime.UtcNow, model.Comment, sb.ToString(),
-                        GetKeywords(), model.Description, saveMode);
+                    Pages.SetPageContent(currentPage.Provider.CurrentWiki, NameTools.GetNamespace(currentPage.FullName), NameTools.GetLocalName(currentPage.FullName), 
+                        model.PageTitle.ToString(), username, DateTime.UtcNow, model.Comment, sb.ToString(),
+                        GetKeywords(model), model.Description, saveMode);
                 }
                 else
                 {
-                    Pages.SetPageContent(currentPage.Provider.CurrentWiki, NameTools.GetNamespace(currentPage.FullName), NameTools.GetLocalName(currentPage.FullName), model.PageTitle.ToString(), username, DateTime.UtcNow, model.Comment, editor.GetContent(),
-                        GetKeywords(), model.Description, saveMode);
+                    Pages.SetPageContent(currentPage.Provider.CurrentWiki, NameTools.GetNamespace(currentPage.FullName), NameTools.GetLocalName(currentPage.FullName), 
+                        model.PageTitle.ToString(), username, DateTime.UtcNow, model.Comment, editorContent,
+                        GetKeywords(model), model.Description, saveMode);
                 }
 
                 // Save Categories binding
@@ -418,17 +528,17 @@ namespace ScrewTurn.Wiki.Web.Controllers
                 }
                 else isDraft = true;
 
-                ManageDraft();
+                ManageDraft(model, isDraft);
 
-                lblResult.CssClass = "resultok";
-                lblResult.Text = Messages.PageSaved;
+                model.ResultClass = "resultok";
+                model.ResultHtml = Messages.PageSaved;
 
                 // This code is executed every time the page is saved, even when "Save & Continue" is clicked
                 // This causes a draft approval notification to be sent multiple times for the same page,
                 // but this is the only solution because the user might navigate away from the page after
                 // clicking "Save & Continue" but not "Save" or "Cancel" - in other words, it is necessary
                 // to take every chance to send a notification because no more chances might be available
-                if (!canEdit && canEditWithApproval)
+                if (!permissions.CanEdit && permissions.CanEditWithApproval)
                 {
                     Pages.SendEmailNotificationForDraft(currentPage.Provider.CurrentWiki, currentPage.FullName, model.PageTitle.ToString(), model.Comment, username);
                 }
@@ -438,9 +548,28 @@ namespace ScrewTurn.Wiki.Web.Controllers
                     Collisions.CancelEditingSession(currentPage, username);
                     string target = UrlTools.BuildUrl(CurrentWiki, Tools.UrlEncode(currentPage.FullName), GlobalSettings.PageExtension, "?NoRedirect=1",
                         (!string.IsNullOrEmpty(anchor) ? ("#" + anchor + "_" + currentSection.ToString()) : ""));
-                    UrlTools.Redirect(target);
+                    return RedirectTo(target);
                 }
             }
+
+            return View("EditPage", model);
+        }
+
+        /// <summary>
+		/// Gets the keywords entered in the appropriate textbox.
+		/// </summary>
+		/// <returns>The keywords.</returns>
+		private string[] GetKeywords(EditModel model)
+        {
+            var keywords = (model.Keywords ?? "").Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+            keywords =
+                (from k in keywords
+                 select k.Trim())
+                 .Distinct(StringComparer.OrdinalIgnoreCase)
+                 .ToArray();
+
+            return keywords;
         }
 
         /// <summary>
@@ -450,19 +579,26 @@ namespace ScrewTurn.Wiki.Web.Controllers
         {
             if (isDraft)
             {
+                var currentPage = model.CurrentPage;
+
                 model.SaveAsDraft = true;
-                model.MinorChangeEnabled = false;
-                pnlDraft.Visible = true;
-                lblDraftInfo.Text = lblDraftInfo.Text.Replace("##USER##",
-                    Users.UserLink(CurrentWiki, currentPage.User, true)).Replace("##DATETIME##",
-                    Preferences.AlignWithTimezone(CurrentWiki, currentPage.LastModified).ToString(Settings.GetDateTimeFormat(CurrentWiki))).Replace("##VIEWCHANGES##",
-                    string.Format("<a href=\"{0}\" target=\"_blank\">{1}</a>", UrlTools.BuildUrl(CurrentWiki, "Diff?Page=",
-                    Tools.UrlEncode(currentPage.FullName), "&amp;Rev1=Current&amp;Rev2=Draft"),
-                    Messages.ViewChanges));
+                model.ViewFlags.MinorChangeEnabled = false;
+                //pnlDraft.Visible = 
+                model.ViewFlags.IsDraft = true;
+                //lblDraftInfo.Text = 
+                model.DraftInfoHtml = //model.DraftInfoHtml       // lblDraftInfo.Text
+                    resx.LblDraftInfo_Text
+                    //"You are currently editing a previously saved <b>draft</b> of this page, edited by <b>##USER##</b> on <b>##DATETIME##</b> (##VIEWCHANGES##)."
+                    .Replace("##USER##", Users.UserLink(CurrentWiki, currentPage.User, true))
+                    .Replace("##DATETIME##", Preferences.AlignWithTimezone(CurrentWiki, currentPage.LastModified).ToString(Settings.GetDateTimeFormat(CurrentWiki)))
+                    .Replace("##VIEWCHANGES##", string.Format("<a href=\"{0}\" target=\"_blank\">{1}</a>", 
+                        UrlTools.BuildUrl(CurrentWiki, "Diff?Page=", Tools.UrlEncode(currentPage.FullName), "&amp;Rev1=Current&amp;Rev2=Draft"),
+                        Messages.ViewChanges));
             }
             else
             {
-                pnlDraft.Visible = false;
+                //pnlDraft.Visible = false;
+                model.ViewFlags.IsDraft = false;
             }
         }
 
@@ -470,14 +606,14 @@ namespace ScrewTurn.Wiki.Web.Controllers
         /// Detects the permissions for the current user.
         /// </summary>
         /// <remarks><b>currentPage</b> should be set before calling this method.</remarks>
-        private Permissions DetectPermissions(PageContent currentPage)
+        private EditModel.PermissionsModel DetectPermissions(PageContent currentPage)
         {
             string currentUser = SessionFacade.GetCurrentUsername();
             string[] currentGroups = SessionFacade.GetCurrentGroupNames(CurrentWiki);
 
             AuthChecker authChecker = new AuthChecker(Collectors.CollectorsBox.GetSettingsProvider(CurrentWiki));
 
-            var permissions = new Permissions();
+            var permissions = new EditModel.PermissionsModel();
 
             if (currentPage != null)
             {
@@ -504,7 +640,7 @@ namespace ScrewTurn.Wiki.Web.Controllers
             return permissions;
         }
 
-        private class Permissions
+        /*private class Permissions
         {
             public bool CanEdit { get; set; } = false;
             public bool CanEditWithApproval { get; set; } = false;
@@ -512,28 +648,31 @@ namespace ScrewTurn.Wiki.Web.Controllers
             public bool CanCreateNewCategories { get; set; } = false;
             public bool CanManagePageCategories { get; set; } = false;
             public bool CanDownloadAttachments { get; set; } = false;
-        }
+        }*/
 
         /// <summary>
         /// Populates the categories for the current namespace and provider, selecting the ones specified.
         /// </summary>
         /// <param name="toSelect">The categories to select.</param>
         /// <param name="currentPage"></param>
-        private void PopulateCategories(CategoryInfo[] toSelect, PageContent currentPage)
+        private List<SelectListItem> PopulateCategories(CategoryInfo[] toSelect, PageContent currentPage)
         {
             IPagesStorageProviderV60 provider = FindAppropriateProvider(currentPage);
             List<CategoryInfo> cats = Pages.GetCategories(CurrentWiki, DetectNamespaceInfo());
-            lstCategories.Items.Clear();
+            //lstCategories.Items.Clear();
+            var result = new List<SelectListItem>();
             foreach (CategoryInfo c in cats)
             {
                 if (c.Provider == provider)
                 {
-                    ListItem itm = new ListItem(NameTools.GetLocalName(c.FullName), c.FullName);
+                    var itm = new SelectListItem { Text = NameTools.GetLocalName(c.FullName), Value = c.FullName };
                     if (Array.Find<CategoryInfo>(toSelect, delegate (CategoryInfo s) { return s.FullName == c.FullName; }) != null)
                         itm.Selected = true;
-                    lstCategories.Items.Add(itm);
+                    result.Add(itm);
                 }
             }
+
+            return result;
         }
 
         /// <summary>
@@ -644,7 +783,7 @@ namespace ScrewTurn.Wiki.Web.Controllers
             else
             {
                 model.AutoTemplateLabel = new HtmlString(Localization.Common.Edit.LblAutoTemplate_Text.Replace("##TEMPLATE##", template.Name));
-                model.AutoTemplateVisible = true;
+                model.ViewFlags.AutoTemplateVisible = true;
                 return template.Content;
             }
         }
@@ -684,12 +823,13 @@ namespace ScrewTurn.Wiki.Web.Controllers
         /// <summary>
         /// Verifies for editing collisions, and if no collision is found, "locks" the page
         /// </summary>
-        private void ManageEditingCollisions(PageContent currentPage, int currentSection)
+        private void ManageEditingCollisions(EditModel model, PageContent currentPage, int currentSection)
         {
             if (currentPage == null) return;
 
-            lblRefreshLink.Text = @"<a href=""" +
-                UrlTools.BuildUrl(CurrentWiki, "Edit.aspx?Page=", Tools.UrlEncode(currentPage.FullName), (Request["Section"] != null ? "&amp;Section=" + currentSection.ToString() : "")) +
+            //lblRefreshLink.Text = 
+            model.RefreshLinkHtml = @"<a href=""" +
+                UrlTools.BuildUrl(CurrentWiki, "Edit?Page=", Tools.UrlEncode(currentPage.FullName), (Request["Section"] != null ? "&amp;Section=" + currentSection.ToString() : "")) +
                 @""">" + Messages.Refresh + " &raquo;</a>";
 
             string username = Request.UserHostAddress;
@@ -697,28 +837,37 @@ namespace ScrewTurn.Wiki.Web.Controllers
 
             if (Collisions.IsPageBeingEdited(currentPage, username))
             {
-                pnlCollisions.Visible = true;
-                lblConcurrentEditingUsername.Text = "(" + Users.UserLink(CurrentWiki, Collisions.WhosEditing(currentPage)) + ")";
+                //pnlCollisions.Visible 
+                model.ViewFlags.IsCollision = true;
+                //lblConcurrentEditingUsername.Text =
+                model.ConcurrentEditingUsernameHtml = "(" + Users.UserLink(CurrentWiki, Collisions.WhosEditing(currentPage)) + ")";
                 if (Settings.GetDisableConcurrentEditing(CurrentWiki))
                 {
-                    lblSaveDisabled.Visible = true;
-                    lblSaveDangerous.Visible = false;
-                    btnSave.Enabled = false;
-                    btnSaveAndContinue.Enabled = false;
+                    //lblSaveDisabled.Visible = true;
+                    //lblSaveDangerous.Visible = false;
+
+                    model.ViewFlags.SaveEnabled = false;
+                    /*btnSave.Enabled = false;
+                    btnSaveAndContinue.Enabled = false;*/
                 }
                 else
                 {
-                    lblSaveDisabled.Visible = false;
-                    lblSaveDangerous.Visible = true;
-                    btnSave.Enabled = true;
-                    btnSaveAndContinue.Enabled = true;
+                    //lblSaveDisabled.Visible = false;
+                    //lblSaveDangerous.Visible = true;
+                    model.ViewFlags.SaveDangerous = true;
+
+                    model.ViewFlags.SaveEnabled = true;
+                    /*btnSave.Enabled = true;
+                    btnSaveAndContinue.Enabled = true;*/
                 }
             }
             else
             {
-                pnlCollisions.Visible = false;
-                btnSave.Enabled = true;
-                btnSaveAndContinue.Enabled = true;
+                //pnlCollisions.Visible = 
+                model.ViewFlags.IsCollision = false;
+                model.ViewFlags.SaveEnabled = true;
+                /*btnSave.Enabled = true;
+                btnSaveAndContinue.Enabled = true;*/
                 Collisions.RenewEditingSession(currentPage, username);
             }
         }
@@ -726,15 +875,20 @@ namespace ScrewTurn.Wiki.Web.Controllers
         /// <summary>
         /// Manages the display of the template selection controls.
         /// </summary>
-        private void ManageTemplatesDisplay()
+        private void ManageTemplatesDisplay(EditModel model)
         {
             // Hide templates selection if there aren't any or if the editor is not in WikiMarkup mode
-            if (Templates.GetTemplates(CurrentWiki).Count == 0 || !editor.IsInWikiMarkup())
+            if (Templates.GetTemplates(CurrentWiki).Count == 0 || model.EditorInWysiwyg /* !editor.IsInWikiMarkup()*/)
             {
-                btnTemplates.Visible = false;
-                pnlTemplates.Visible = false;
+                //btnTemplates.Visible = false;
+                //pnlTemplates.Visible = false;
+                model.ViewFlags.HasTemplates = false;
             }
-            else btnTemplates.Visible = true;
+            else
+            {
+                //btnTemplates.Visible = true;
+                model.ViewFlags.HasTemplates = true;
+            }
         }
 
 

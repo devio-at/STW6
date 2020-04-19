@@ -46,6 +46,11 @@ namespace ScrewTurn.Wiki.Web.Controllers
             return nsinfo;
         }
 
+        protected string DetectNamespace()
+        {
+            return Tools.DetectCurrentNamespace();
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PageController"/> class.
         /// </summary>

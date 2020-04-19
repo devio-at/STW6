@@ -8,7 +8,7 @@
 <html dir="@Model.Direction" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@Model.Title</title>
     @foreach (var htmlHead in Model.HtmlHeads)
@@ -19,8 +19,8 @@
     @Scripts.Render(BundleConfig.JqueryJS)
     @Scripts.Render(BundleConfig.JqueryUnobtrusiveJS)
     @Scripts.Render(BundleConfig.NotyJS)
+    @Scripts.Render(BundleConfig.JqueryvalJS)
     @*@Scripts.Render(BundleConfig.BootboxJS)*@
-
     @Url.ScriptLink("stw/common/commonwizard.js")
 </head>
 <body id="SABody">

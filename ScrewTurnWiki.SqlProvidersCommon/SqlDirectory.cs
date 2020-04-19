@@ -35,7 +35,9 @@ namespace ScrewTurn.Wiki.Plugins.SqlCommon {
 		}
 
 		private void _initCacheDirectory() {
-			string cachePath = System.IO.Path.Combine(Environment.ExpandEnvironmentVariables("%temp%"), "SqlDirectory");
+            // replacing Environment.ExpandEnvironmentVariables("%temp%")
+            var temp = System.Web.HttpContext.Current.Server.MapPath("~/public");
+            string cachePath = System.IO.Path.Combine(temp, "SqlDirectory");
 			System.IO.DirectoryInfo azureDir = new System.IO.DirectoryInfo(cachePath);
 			if(!azureDir.Exists)
 				azureDir.Create();

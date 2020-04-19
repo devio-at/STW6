@@ -1,0 +1,20 @@
+﻿@model ScrewTurn.Wiki.Web.Models.Edit.KeepAliveModel
+
+<script type="text/javascript">
+// <![CDATA[
+
+	function Refresh() {
+		$.ajax({
+			url: '/SessionRefresh?Page=' + encodeURIComponent('@(Model.CurrentPage != null ? Model.CurrentPage : "")'),
+			success: function () {
+				setTimeout('Refresh()', @(ScrewTurn.Wiki.Collisions.EditingSessionTimeout * 1000));
+			}
+		});
+	}
+
+	$(function () {
+		Refresh();
+	});
+
+// ]]>
+</script>

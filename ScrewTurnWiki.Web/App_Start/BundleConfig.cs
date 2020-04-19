@@ -11,7 +11,7 @@ namespace ScrewTurnWiki.Web
         public const string JqueryJS = "~/bundles/jquery";
         public const string JqueryUIJS = "~/bundles/jquery-ui";
         public const string JqueryUICss = "~/Content/jquery/jquery-ui-css";
-        //public const string JqueryvalJS = "~/bundles/jqueryval";
+        public const string JqueryvalJS = "~/bundles/jqueryval";
         public const string BootstrapJS = "~/bundles/bootstrap";
         public const string BootstrapCss = "~/Content/bootstrapcss";
         public const string RespondJS = "~/bundles/respond";
@@ -41,9 +41,9 @@ namespace ScrewTurnWiki.Web
             bundles.Add(new ScriptBundle(JqueryUIJS).Include("~/Scripts/jquery-ui.js"));
             bundles.Add(new StyleBundle(JqueryUICss).Include("~/Content/jquery/css/jquery-ui*"));
 
-            //bundles.Add(new ScriptBundle(JqueryvalJS).Include(
-            //            "~/Scripts/jquery.unobtrusive*",
-            //            "~/Scripts/jquery.validate*"));
+            bundles.Add(new ScriptBundle(JqueryvalJS).Include(
+                        //"~/Scripts/jquery.unobtrusive*",
+                        "~/Scripts/jquery.validate*"));
 
             // Use the development version of Modernizr to develop with and learn from. Then, when you're
             // ready for production, use the build tool at http://modernizr.com to pick only the tests you need.

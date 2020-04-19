@@ -142,6 +142,18 @@ namespace ScrewTurn.Wiki.Web
                 );
 
             routes.MapRoute(
+                "Edit",
+                "Edit",
+                defaults: new { controller = "Edit", action = "Edit", page = UrlParameter.Optional }
+            );
+
+            routes.MapRoute(
+                "Editor",
+                "Editor/{action}",
+                defaults: new { controller = "Editor", action = "Index" }
+            );
+
+            routes.MapRoute(
                 "PageViewCode",
                 "{page}/Code",
                 defaults: new {controller = "Wiki", action = "PageViewCode" }
@@ -181,6 +193,7 @@ namespace ScrewTurn.Wiki.Web
                     httpMethod = new HttpMethodConstraint("GET")
                 }
                 );
+
 
             routes.MapRoute(
                 name: "Default",
